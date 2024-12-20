@@ -10,7 +10,8 @@ r"import torch.nn as nn", True,
 from .moduleimplant import ModuleImplant"""
 ),(
 r" +for i, \(f, n, m, args\)", False,
-"""    globals().update(ModuleImplant.get_third_party_modules_dict())
+"""
+    globals().update(ModuleImplant.get_third_party_modules_dict())
 
 """
 ),(    
@@ -53,18 +54,20 @@ def modify(modify: bool):
     
     ultralytics_path = os.path.dirname(ultralytics.__file__)
     nn_modules_path = os.path.join(ultralytics_path, 'nn')
+    moduleimplant_path = os.path.dirname(__file__)
+    backup_dir = os.path.join(moduleimplant_path, "backup")
+    if not os.path.isdir(backup_dir):
+        os.mkdir(backup_dir)
     
     if not os.path.isdir(nn_modules_path):
         raise AssertionError("Ultralytics does not have 'nn' dir as expected.")
     
     target_file = os.path.join(nn_modules_path, 'moduleimplant.py')
     source_file = os.path.join(os.path.dirname(__file__), 'moduleimplant.py')
-    tasks_file = os.path.join(ultralytics_path, 'tasks.py')
-    init_file = os.path.join(ultralytics_path, '__init__.py')
-    
-    backup_dir = "./backup"
-    if not os.path.isdir(backup_dir):
-        os.mkdir(backup_dir)
+    tasks_file = os.path.join(nn_modules_path, 'tasks.py')
+    init_file = os.path.join(nn_modules_path, '__init__.py')
+    tasks_bak_file = os.path.join(backup_dir, 'tasks.py')
+    init_bak_file = os.path.join(backup_dir, '__init__.py')
     
     if modify:
         # Copy moduleimplant.py to ultralytics/nn
@@ -76,14 +79,14 @@ def modify(modify: bool):
         
         # Modify ultralytics inner file
         if os.path.isfile(tasks_file):
-            shutil.copy(tasks_file, ".backup/tasks.py.bak")  # prep backup
+            shutil.copy(tasks_file, tasks_bak_file)  # prep backup
             insert_code(tasks_insertions, tasks_file)
             print(f"Successfully modified {tasks_file}.")
         else:
             raise FileNotFoundError(f"{tasks_file} not found, skipping modification.")
         
         if os.path.isfile(init_file):
-            shutil.copy(init_file, ".backup/__init__.py.bak")  # prep backup
+            shutil.copy(init_file, init_bak_file)  # prep backup
             insert_code(init_insertions, init_file)
             print(f"Successfully modified {init_file}.")
         else:
@@ -96,19 +99,19 @@ def modify(modify: bool):
         else:
             raise FileNotFoundError("moduleimplant.py not found in Ultralytics, skipping delete.")
         # Check if backup is still remain, then copy back
-        if os.path.isfile(".backup/tasks.py.bak"):
-            shutil.copy(".backup/tasks.py.bak", tasks_file)
+        if os.path.isfile(tasks_bak_file):
+            shutil.copy(tasks_bak_file, tasks_file)
             print(f"Successfully recover '{tasks_file}'")
         else:
             raise FileNotFoundError(f"Backup of tasks.py not found, skipping recover.")
-        if os.path.isfile(".backup/__init__.py.bak"):
-            shutil.copy(".backup/__init__.py.bak", init_file)
+        if os.path.isfile(init_bak_file):
+            shutil.copy(init_bak_file, init_file)
             print(f"Successfully recover '{init_file}'")
         else:
             raise FileNotFoundError(f"Backup of __init__.py not found, skipping recover.")
         
 parser = argparse.ArgumentParser(description="modify or de-modify Ultralytics with ModuleImplant")
-parser.add_argument('command', choices=['modify', 'de-modify'], required=True)
+parser.add_argument('command', choices=['modify', 'de-modify'])
             
 def main():
     args = parser.parse_args()
