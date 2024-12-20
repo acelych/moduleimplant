@@ -62,6 +62,10 @@ def modify(modify: bool):
     tasks_file = os.path.join(ultralytics_path, 'tasks.py')
     init_file = os.path.join(ultralytics_path, '__init__.py')
     
+    backup_dir = "./backup"
+    if not os.path.isdir(backup_dir):
+        os.mkdir(backup_dir)
+    
     if modify:
         # Copy moduleimplant.py to ultralytics/nn
         if os.path.isfile(source_file):
