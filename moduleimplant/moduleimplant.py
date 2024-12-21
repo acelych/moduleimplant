@@ -85,10 +85,7 @@ class ModuleImplant():
                 spec = importlib.util.spec_from_file_location(module_name, path)
                 module = importlib.util.module_from_spec(spec)
                 
-                if module not in sys.modules:
-                    import warnings
-                    warnings.filterwarnings("ignore", category=UserWarning)
-                    
+                if module_name not in sys.modules:                    
                     sys.modules[module_name] = module
                     spec.loader.exec_module(module)
                     saved_dict[getattr(module, class_name)] = (path, module_name, class_name)
