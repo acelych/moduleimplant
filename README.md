@@ -15,7 +15,7 @@ pip install moduleimplant
 
 ## 2. Usage
 
-**Auto setup**
+**auto setup**
 
 Module-Implant need some manual operations to modify Ultralytics since Ultralytics does not provide APIs for custom modules and using if-else to select inner modules.
 
